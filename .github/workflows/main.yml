@@ -21,4 +21,9 @@ jobs:
             git fetch --all
             git reset --hard origin/main
             cd ..
+            git config user.name «CI»
+            git config user.email «ci@bot.com»
+            git add .
+            git commit -m "Updated api gateway"
+            git push
             docker compose up --build --force-recreate -d --no-deps gateway
