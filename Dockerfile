@@ -5,21 +5,20 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Устанавливаем рабочую директорию
-WORKDIR /app
+# Устанавливаем рабочую директорию в папку app
+WORKDIR /app/app
 
 # Устанавливаем системные зависимости (например, gcc)
 RUN apt-get update && apt-get install -y gcc && rm -rf /var/lib/apt/lists/*
 
 # Копируем файл с зависимостями и устанавливаем их
 COPY requirements.txt /app/requirements.txt
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && pip install --no-cache-dir -r /app/requirements.txt
 
 # Копируем весь исходный код приложения в контейнер
 COPY . /app
 
-# Открываем порт 8000 (по умолчанию uvicorn)
-EXPOSE 8000
+EXPOSE 7733
 
 # Запускаем приложение
 CMD ["python", "main.py"]
