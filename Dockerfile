@@ -4,6 +4,7 @@ FROM python:3.12-slim
 # Отключаем запись pyc-файлов и буферизацию вывода
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 
 # Устанавливаем рабочую директорию в папку app
 WORKDIR /app/app
