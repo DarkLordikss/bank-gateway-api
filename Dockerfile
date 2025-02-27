@@ -20,5 +20,7 @@ COPY . /app
 
 EXPOSE 7733
 
+WORKDIR /app
+
 # Запускаем приложение
-CMD ["python", "main.py"]
+CMD ["python", "app/main.py"]
