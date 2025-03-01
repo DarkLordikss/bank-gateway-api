@@ -19,8 +19,6 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r /app/requirements
 # Копируем весь исходный код приложения в контейнер
 COPY . /app
 
-EXPOSE 7733
-
 WORKDIR /app
 
 # Запускаем приложение
