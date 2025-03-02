@@ -6,13 +6,14 @@ load_dotenv()
 
 import uvicorn
 from fastapi import FastAPI
-from app.api import user
+from app.api import user, account
 from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI(title="Bank API Gateway", version="1.0.0")
 
 app.include_router(user.router)
+app.include_router(account.router)
 
 origins = ["*"]
 

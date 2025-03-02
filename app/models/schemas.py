@@ -27,3 +27,17 @@ class ProfileResp(BaseModel):
     phone_number: str
     created_at: datetime
     fathername: Optional[str] = None
+
+
+class AccountDTO(BaseModel):
+    id: str
+    amount: float
+    number: str
+    type: str  # "DEBIT" или "CREDIT"
+    createdAt: datetime
+
+
+class TransactionDTO(BaseModel):
+    amount: float
+    type: str  # "DEPOSIT", "WITHDRAW", "REMITTANCE"
+    createdAt: datetime
