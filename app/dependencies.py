@@ -10,7 +10,7 @@ async def token_check(token: str = Query(...)):
     """
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"{settings.client_service_url}/token/check",
+            f"{settings.user_service_url}/token/check",
             params={"token": token}
         )
     if response.status_code != 200:
