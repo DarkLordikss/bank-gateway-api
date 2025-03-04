@@ -14,7 +14,6 @@ async def token_check(credentials: HTTPAuthorizationCredentials = Security(secur
     Возвращает user_id, если токен валиден.
     """
     token = credentials.credentials
-    print(token)
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{settings.user_service_url}/token/check",
