@@ -1,13 +1,20 @@
-from fastapi import HTTPException, Query
+from typing import Annotated
+
+from fastapi import HTTPException, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import httpx
 from app.core.config import settings
 
+security = HTTPBearer()
 
-async def token_check(token: str = Query(...)):
+
+async def token_check(credentials: HTTPAuthorizationCredentials = Security(security)) -> str:
     """
-    Зависимость для проверки токена.
-    При успешной проверке возвращает идентификатор пользователя (user_id).
+    Проверяет JWT-токен через сервис employee.
+    Возвращает user_id, если токен валиден.
     """
+    token = credentials.credentials
+    print(token)
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{settings.user_service_url}/token/check",
