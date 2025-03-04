@@ -71,3 +71,12 @@ async def login_employee(data: LoginEmployeeReq) -> JwtToken:
         )
         response.raise_for_status()
         return JwtToken(**response.json())
+
+
+async def get_employee_profile(employee_id: str) -> EmployeeDTO:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.user_service_url}/employee/profile/{employee_id}"
+        )
+        response.raise_for_status()
+        return EmployeeDTO(**response.json())

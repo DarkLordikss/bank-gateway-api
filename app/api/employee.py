@@ -16,7 +16,7 @@ from app.services.employee_service import (
     set_client_active,
     create_client,
     create_employee,
-    login_employee
+    login_employee, get_employee_profile
 )
 from app.dependencies import token_check  # используем для авторизации
 
@@ -174,3 +174,33 @@ async def employee_login(data: LoginEmployeeReq):
         return token
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
+
+@router.get(
+    "/profile",
+    response_model=EmployeeDTO,
+    responses={
+        401: {"description": "Bad token"},
+        404: {"description": "User not found"},
+        422: {"description": "Validation error - invalid input data"},
+        500: {"description": "Internal server error"}
+    }
+)
+async def get_profile(employee_id: str = Depends(token_check)):
+    """
+    Эндпойнт получения профиля сотрудника.
+    Для доступа требуется валидный токен.
+    """
+    try:
+        profile = await get_employee_profile(employee_id)
+        return profile
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(
+            status_code=exc.response.status_code,
+            detail=exc.response.text
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
