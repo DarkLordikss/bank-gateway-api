@@ -28,9 +28,9 @@ router = APIRouter(
         500: {"description": "Internal server error"}
     }
 )
-async def client_accounts(client_id: str = Depends(token_check)):
+async def client_accounts(user_data: dict = Depends(token_check)):
     try:
-        accounts = await get_client_accounts(client_id)
+        accounts = await get_client_accounts(user_data['user_id'])
         return accounts
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
@@ -45,9 +45,9 @@ async def client_accounts(client_id: str = Depends(token_check)):
         500: {"description": "Internal server error"}
     }
 )
-async def create_account(client_id: str = Depends(token_check)):
+async def create_account(user_data: dict = Depends(token_check)):
     try:
-        await create_debit_account(client_id)
+        await create_debit_account(user_data['user_id'])
         return {"message": "Account created successfully"}
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
@@ -65,11 +65,11 @@ async def create_account(client_id: str = Depends(token_check)):
 )
 async def withdraw(
     account_id: str = Path(..., description="ID счета"),
-    client_id: str = Depends(token_check),
+    user_data: dict = Depends(token_check),
     amount: float = Query(..., description="Сумма для снятия")
 ):
     try:
-        await withdraw_account(account_id, client_id, amount)
+        await withdraw_account(account_id, user_data['user_id'], amount, user_data['role'])
         return {"message": "Withdrawal successful"}
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
@@ -87,10 +87,10 @@ async def withdraw(
 )
 async def transactions(
     account_id: str = Path(..., description="ID счета"),
-    client_id: str = Depends(token_check)
+    user_data: dict = Depends(token_check)
 ):
     try:
-        txs = await get_transactions(account_id, client_id)
+        txs = await get_transactions(account_id, user_data['user_id'], user_data['role'])
         return txs
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
@@ -107,11 +107,11 @@ async def transactions(
 )
 async def deposit(
     account_id: str = Path(..., description="ID счета"),
-    client_id: str = Depends(token_check),
+    user_data: dict = Depends(token_check),
     amount: float = Query(..., description="Сумма для пополнения")
 ):
     try:
-        await deposit_account(account_id, client_id, amount)
+        await deposit_account(account_id, user_data['user_id'], amount, user_data['role'])
         return {"message": "Deposit successful"}
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
@@ -129,10 +129,10 @@ async def deposit(
 )
 async def close_account(
     account_id: str = Path(..., description="ID счета"),
-    client_id: str = Depends(token_check)
+    user_data: dict = Depends(token_check)
 ):
     try:
-        await delete_account(account_id, client_id)
+        await delete_account(account_id, user_data['user_id'], user_data['role'])
         return {"message": "Account closed successfully"}
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)

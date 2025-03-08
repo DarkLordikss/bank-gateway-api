@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 
 from app.dependencies import token_check
 from app.models.schemas import LoginReq, RegisterClientReq, JwtToken, ProfileResp
-from app.services.user_service import login_client, register_client, get_client_profile
+from app.services.client_service import login_client, register_client, get_client_profile
 
 router = APIRouter(
     prefix="/client",
@@ -71,13 +71,13 @@ async def register(data: RegisterClientReq):
         500: {"description": "Internal server error"}
     }
 )
-async def get_profile(client_id: str = Depends(token_check)):
+async def get_profile(client_data: dict = Depends(token_check)):
     """
     Эндпойнт получения профиля пользователя.
     Для доступа требуется валидный токен.
     """
     try:
-        profile = await get_client_profile(client_id)
+        profile = await get_client_profile(client_data['user_id'])
         return profile
     except httpx.HTTPStatusError as exc:
         raise HTTPException(

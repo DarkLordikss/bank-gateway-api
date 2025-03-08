@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Dict
 
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -8,7 +8,7 @@ from app.core.config import settings
 security = HTTPBearer()
 
 
-async def token_check(credentials: HTTPAuthorizationCredentials = Security(security)) -> str:
+async def token_check(credentials: HTTPAuthorizationCredentials = Security(security)) -> Dict:
     """
     Проверяет JWT-токен через сервис employee.
     Возвращает user_id, если токен валиден.
@@ -22,4 +22,7 @@ async def token_check(credentials: HTTPAuthorizationCredentials = Security(secur
     if response.status_code != 200:
         raise HTTPException(status_code=response.status_code, detail=response.text)
     data = response.json()
-    return data["user_id"]
+    return {
+        "user_id": data["user_id"],
+        "role": data["role"]
+    }

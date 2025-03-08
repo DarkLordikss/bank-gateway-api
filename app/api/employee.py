@@ -18,7 +18,7 @@ from app.services.employee_service import (
     create_employee,
     login_employee, get_employee_profile
 )
-from app.dependencies import token_check  # используем для авторизации
+from app.dependencies import token_check
 
 router = APIRouter(
     prefix="/employee",
@@ -34,7 +34,7 @@ router = APIRouter(
         500: {"description": "Internal server error"}
     }
 )
-async def get_employee(employee_id: str = Depends(token_check)):
+async def get_employee(_: dict = Depends(token_check)):
     """
     Возвращает список сотрудников.
     Требуется действующий JWT-токен сотрудника.
@@ -57,7 +57,7 @@ async def get_employee(employee_id: str = Depends(token_check)):
 async def employee_set_active(
     employee_id: str = Path(..., description="ID сотрудника"),
     is_active: bool = Query(..., description="Статус активности"),
-    current_employee: str = Depends(token_check)
+    _: dict = Depends(token_check)
 ):
     """
     Обновляет статус активности сотрудника.
@@ -77,7 +77,7 @@ async def employee_set_active(
         500: {"description": "Internal server error"}
     }
 )
-async def get_clients_endpoint(current_employee: str = Depends(token_check)):
+async def get_clients_endpoint(_: dict = Depends(token_check)):
     """
     Возвращает список клиентов.
     """
@@ -99,7 +99,7 @@ async def get_clients_endpoint(current_employee: str = Depends(token_check)):
 async def client_set_active(
     client_id: str = Path(..., description="ID клиента"),
     is_active: bool = Query(..., description="Статус активности"),
-    current_employee: str = Depends(token_check)
+    _: dict = Depends(token_check)
 ):
     """
     Обновляет статус активности клиента.
@@ -121,7 +121,7 @@ async def client_set_active(
 )
 async def create_client_endpoint(
     data: CreateClientReq,
-    current_employee: str = Depends(token_check)
+    _: dict = Depends(token_check)
 ):
     """
     Создает нового клиента.
@@ -143,7 +143,7 @@ async def create_client_endpoint(
 )
 async def create_employee_endpoint(
     data: CreateEmployeeReq,
-    current_employee: str = Depends(token_check)
+    _: dict = Depends(token_check)
 ):
     """
     Создает нового сотрудника.
@@ -186,20 +186,20 @@ async def employee_login(data: LoginEmployeeReq):
         500: {"description": "Internal server error"}
     }
 )
-async def get_profile(employee_id: str = Depends(token_check)):
+async def get_profile(employee_data: dict = Depends(token_check)):
     """
     Эндпойнт получения профиля сотрудника.
     Для доступа требуется валидный токен.
     """
     try:
-        profile = await get_employee_profile(employee_id)
+        profile = await get_employee_profile(employee_data['user_id'])
         return profile
     except httpx.HTTPStatusError as exc:
         raise HTTPException(
             status_code=exc.response.status_code,
             detail=exc.response.text
         )
-    except Exception as exc:
+    except Exception as _:
         raise HTTPException(
             status_code=500,
             detail="Internal server error"
