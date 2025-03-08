@@ -1,10 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 import httpx
 
+from app.dependencies import token_check
 from app.models.schemas import CredentialsDTO
-from app.services.auth_service import token_decode
+
 
 router = APIRouter(
     prefix="/auth",
@@ -21,13 +22,11 @@ router = APIRouter(
         500: {"description": "Internal server error"}
     }
 )
-async def token_decode_endpoint(token: str):
+async def token_decode_endpoint(user_data: dict = Depends(token_check)):
     try:
-        credentials = await token_decode(token)
-
         return CredentialsDTO(
-            user_id=UUID(credentials['user_id']),
-            role=credentials['role']
+            user_id=UUID(user_data['user_id']),
+            role=user_data['role']
         )
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
