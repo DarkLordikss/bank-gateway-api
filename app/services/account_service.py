@@ -4,12 +4,13 @@ from app.core.config import settings
 from app.models.schemas import AccountDTO, TransactionDTO
 
 
-async def get_client_accounts(client_id: str) -> List[AccountDTO]:
+async def get_client_accounts(client_id: str, role: str) -> List[AccountDTO]:
     async with httpx.AsyncClient() as client:
         response = await client.get(
             f"{settings.account_service_url}/accounts",
             params={
-                "clientId": client_id
+                "clientId": client_id,
+                "role": role
             }
         )
         response.raise_for_status()
@@ -17,12 +18,13 @@ async def get_client_accounts(client_id: str) -> List[AccountDTO]:
         return [AccountDTO(**item) for item in data]
 
 
-async def create_debit_account(client_id: str) -> None:
+async def create_debit_account(client_id: str, role: str) -> None:
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{settings.account_service_url}/accounts",
             params={
-                "clientId": client_id
+                "clientId": client_id,
+                "role": role
             }
         )
         response.raise_for_status()

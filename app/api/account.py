@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, Query, Path, Depends
 from typing import List
 import httpx
@@ -30,7 +32,24 @@ router = APIRouter(
 )
 async def client_accounts(user_data: dict = Depends(token_check)):
     try:
-        accounts = await get_client_accounts(user_data['user_id'])
+        accounts = await get_client_accounts(user_data['user_id'], user_data['role'])
+        return accounts
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
+
+@router.get(
+    "/concrete",
+    response_model=List[AccountDTO],
+    responses={
+        400: {"description": "Bad request"},
+        422: {"description": "Validation error"},
+        500: {"description": "Internal server error"}
+    }
+)
+async def client_accounts_concrete(client_id: UUID, user_data: dict = Depends(token_check)):
+    try:
+        accounts = await get_client_accounts(str(client_id), user_data['role'])
         return accounts
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
@@ -47,7 +66,7 @@ async def client_accounts(user_data: dict = Depends(token_check)):
 )
 async def create_account(user_data: dict = Depends(token_check)):
     try:
-        await create_debit_account(user_data['user_id'])
+        await create_debit_account(user_data['user_id'], user_data['role'])
         return {"message": "Account created successfully"}
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
