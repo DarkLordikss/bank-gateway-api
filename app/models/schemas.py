@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel
 from typing import Optional
@@ -82,3 +83,8 @@ class CreateEmployeeReq(BaseModel):
 class LoginEmployeeReq(BaseModel):
     username: str
     password: str
+
+
+class CredentialsDTO(BaseModel):
+    user_id: UUID
+    role: str
