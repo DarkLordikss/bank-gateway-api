@@ -80,3 +80,15 @@ async def delete_account(account_id: str, client_id: str, role: str) -> None:
             }
         )
         response.raise_for_status()
+
+
+async def set_primary_account(account_id: str, client_id: str, role: str) -> None:
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{settings.account_service_url}/accounts/{account_id}/primary",
+            params={
+                "clientId": client_id,
+                "role": role
+            }
+        )
+        response.raise_for_status()

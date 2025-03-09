@@ -36,6 +36,7 @@ class AccountDTO(BaseModel):
     amount: float
     number: str
     type: str  # "DEBIT" или "CREDIT"
+    isPrimary: bool
     createdAt: datetime
 
 

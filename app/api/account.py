@@ -12,7 +12,7 @@ from app.services.account_service import (
     withdraw_account,
     get_transactions,
     deposit_account,
-    delete_account,
+    delete_account, set_primary_account,
 )
 
 router = APIRouter(
@@ -83,9 +83,9 @@ async def create_account(user_data: dict = Depends(token_check)):
     }
 )
 async def withdraw(
-    account_id: str = Path(..., description="ID счета"),
-    user_data: dict = Depends(token_check),
-    amount: float = Query(..., description="Сумма для снятия")
+        account_id: str = Path(..., description="ID счета"),
+        user_data: dict = Depends(token_check),
+        amount: float = Query(..., description="Сумма для снятия")
 ):
     try:
         await withdraw_account(account_id, user_data['user_id'], amount, user_data['role'])
@@ -105,8 +105,8 @@ async def withdraw(
     }
 )
 async def transactions(
-    account_id: str = Path(..., description="ID счета"),
-    user_data: dict = Depends(token_check)
+        account_id: str = Path(..., description="ID счета"),
+        user_data: dict = Depends(token_check)
 ):
     try:
         txs = await get_transactions(account_id, user_data['user_id'], user_data['role'])
@@ -125,9 +125,9 @@ async def transactions(
     }
 )
 async def deposit(
-    account_id: str = Path(..., description="ID счета"),
-    user_data: dict = Depends(token_check),
-    amount: float = Query(..., description="Сумма для пополнения")
+        account_id: str = Path(..., description="ID счета"),
+        user_data: dict = Depends(token_check),
+        amount: float = Query(..., description="Сумма для пополнения")
 ):
     try:
         await deposit_account(account_id, user_data['user_id'], amount, user_data['role'])
@@ -147,11 +147,30 @@ async def deposit(
     }
 )
 async def close_account(
-    account_id: str = Path(..., description="ID счета"),
-    user_data: dict = Depends(token_check)
+        account_id: str = Path(..., description="ID счета"),
+        user_data: dict = Depends(token_check)
 ):
     try:
         await delete_account(account_id, user_data['user_id'], user_data['role'])
         return {"message": "Account closed successfully"}
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
+
+@router.post(
+    "/{account_id}/set_primary",
+    responses={
+        200: {"description": "Primary account set successful"},
+        400: {"description": "Bad request"},
+        422: {"description": "Validation error"},
+        500: {"description": "Internal server error"}
+    }
+)
+async def set_primary_account_endpoint(account_id: str = Path(..., description="ID счета"),
+                                       user_data: dict = Depends(token_check)
+                                       ):
+    try:
+        await set_primary_account(account_id, user_data['user_id'], user_data['role'])
+        return {"message": "Primary account set successful"}
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
