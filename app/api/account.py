@@ -5,14 +5,14 @@ from typing import List
 import httpx
 
 from app.dependencies import token_check
-from app.models.schemas import AccountDTO, TransactionDTO
+from app.models.schemas import AccountDTO, TransactionDTO, TransferFundsReq
 from app.services.account_service import (
     get_client_accounts,
     create_debit_account,
     withdraw_account,
     get_transactions,
     deposit_account,
-    delete_account, set_primary_account,
+    delete_account, set_primary_account, transfer_funds,
 )
 
 router = APIRouter(
@@ -174,3 +174,29 @@ async def set_primary_account_endpoint(account_id: str = Path(..., description="
         return {"message": "Primary account set successful"}
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
+
+@router.post(
+    "/{account_id}/transfer",
+    responses={
+        200: {"description": "Transfer processed successfully or is in processing"},
+        400: {"description": "Bad request"},
+        422: {"description": "Validation error"},
+        500: {"description": "Internal server error"}
+    }
+)
+async def transfer(
+    data: TransferFundsReq,
+    user_data: dict = Depends(token_check)
+):
+    try:
+        message = await transfer_funds(
+            from_account_id=str(data.from_account_id),
+            to_account_id=str(data.to_account_id),
+            client_id=user_data['user_id'],
+            amount=data.amount,
+            role=user_data['role']
+        )
+        return {"message": message}
+    except Exception:
+        raise HTTPException(status_code=500, detail='Internal error')

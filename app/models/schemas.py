@@ -92,3 +92,9 @@ class LoginEmployeeReq(BaseModel):
 class CredentialsDTO(BaseModel):
     user_id: UUID
     role: str
+
+
+class TransferFundsReq(BaseModel):
+    to_account_id: UUID
+    from_account_id: UUID
+    amount: float

@@ -4,3 +4,4 @@ uvicorn
 python-dotenv
 pydantic-settings
 python-multipart
+aio_pika

@@ -1,7 +1,13 @@
+import json
+import time
+import uuid
+
 import httpx
 from typing import List
 from app.core.config import settings
 from app.models.schemas import AccountDTO, TransactionDTO
+import aio_pika
+from aio_pika import Message, DeliveryMode
 
 
 async def get_client_accounts(client_id: str, role: str) -> List[AccountDTO]:
@@ -92,3 +98,54 @@ async def set_primary_account(account_id: str, client_id: str, role: str) -> Non
             }
         )
         response.raise_for_status()
+
+
+async def transfer_funds(from_account_id: str, to_account_id: str, client_id: str, amount: float, role: str) -> str:
+    try:
+        connection = await aio_pika.connect_robust(
+            host=settings.rabbitmq_account_host,
+            port=int(settings.rabbitmq_account_port),
+            login=settings.rabbitmq_account_login,
+            password=settings.rabbitmq_account_password
+        )
+        async with connection:
+            channel = await connection.channel()
+
+            await channel.declare_queue(settings.transfer_queue_name, durable=True)
+            callback_queue = await channel.declare_queue(exclusive=True)
+
+            correlation_id = str(uuid.uuid4())
+            transfer_data = {
+                "from_account": from_account_id,
+                "to_account": to_account_id,
+                "clientId": client_id,
+                "amount": amount,
+                "role": role
+            }
+            message_body = json.dumps(transfer_data).encode()
+            message = Message(
+                message_body,
+                correlation_id=correlation_id,
+                reply_to=callback_queue.name,
+                delivery_mode=DeliveryMode.PERSISTENT,
+            )
+
+            await channel.default_exchange.publish(
+                message,
+                routing_key=settings.transfer_queue_name
+            )
+
+            try:
+                time.sleep(3)
+
+                response_message = await callback_queue.get(timeout=3)
+                if response_message.correlation_id == correlation_id:
+                    response_body = response_message.body.decode()
+                    response_data = json.loads(response_body)
+                    return f"Transfer successful: {response_data}"
+                else:
+                    return "Transfer response received with invalid correlation id"
+            except aio_pika.exceptions.QueueEmpty:
+                return "Transfer is being processed"
+    except Exception as exc:
+        raise Exception(f"Transfer failed: {exc}")
