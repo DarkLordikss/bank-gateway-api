@@ -94,7 +94,16 @@ class CredentialsDTO(BaseModel):
     role: str
 
 
-class TransferFundsReq(BaseModel):
-    to_account_id: UUID
-    from_account_id: UUID
+class TransferByAccountReq(BaseModel):
+    to_account: UUID
+    amount: float
+
+
+class TransferByClientReq(BaseModel):
+    to_clientId: UUID
+    amount: float
+
+
+class TransferByAccountNumberReq(BaseModel):
+    to_account_number: UUID
     amount: float

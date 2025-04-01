@@ -5,14 +5,16 @@ from typing import List
 import httpx
 
 from app.dependencies import token_check
-from app.models.schemas import AccountDTO, TransactionDTO, TransferFundsReq
+from app.models.schemas import AccountDTO, TransactionDTO, TransferByAccountNumberReq, \
+    TransferByClientReq, TransferByAccountReq
 from app.services.account_service import (
     get_client_accounts,
     create_debit_account,
     withdraw_account,
     get_transactions,
     deposit_account,
-    delete_account, set_primary_account, transfer_funds,
+    delete_account, set_primary_account, transfer_funds_by_account_number, transfer_funds_by_client,
+    transfer_funds_by_account,
 )
 
 router = APIRouter(
@@ -177,7 +179,7 @@ async def set_primary_account_endpoint(account_id: str = Path(..., description="
 
 
 @router.post(
-    "/{account_id}/transfer",
+    "/{account_id}/transfer/by-account",
     responses={
         200: {"description": "Transfer processed successfully or is in processing"},
         400: {"description": "Bad request"},
@@ -185,18 +187,73 @@ async def set_primary_account_endpoint(account_id: str = Path(..., description="
         500: {"description": "Internal server error"}
     }
 )
-async def transfer(
-    data: TransferFundsReq,
+async def transfer_by_account(
+    account_id: UUID = Path(..., description="ID счета отправителя"),
+    data: TransferByAccountReq = Depends(),
     user_data: dict = Depends(token_check)
 ):
     try:
-        message = await transfer_funds(
-            from_account_id=str(data.from_account_id),
-            to_account_id=str(data.to_account_id),
+        message = await transfer_funds_by_account(
+            from_account_id=str(account_id),
+            to_account_id=str(data.to_account),
             client_id=user_data['user_id'],
             amount=data.amount,
             role=user_data['role']
         )
         return {"message": message}
-    except Exception:
-        raise HTTPException(status_code=500, detail='Internal error')
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@router.post(
+    "/{account_id}/transfer/by-client",
+    responses={
+        200: {"description": "Transfer processed successfully or is in processing"},
+        400: {"description": "Bad request"},
+        422: {"description": "Validation error"},
+        500: {"description": "Internal server error"}
+    }
+)
+async def transfer_by_client(
+    account_id: UUID = Path(..., description="ID счета отправителя"),
+    data: TransferByClientReq = Depends(),
+    user_data: dict = Depends(token_check)
+):
+    try:
+        message = await transfer_funds_by_client(
+            from_account_id=str(account_id),
+            to_client_id=str(data.to_clientId),
+            client_id=user_data['user_id'],
+            amount=data.amount,
+            role=user_data['role']
+        )
+        return {"message": message}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@router.post(
+    "/{account_id}/transfer/by-account-number",
+    responses={
+        200: {"description": "Transfer processed successfully or is in processing"},
+        400: {"description": "Bad request"},
+        422: {"description": "Validation error"},
+        500: {"description": "Internal server error"}
+    }
+)
+async def transfer_by_account_number(
+    account_id: UUID = Path(..., description="ID счета отправителя"),
+    data: TransferByAccountNumberReq = Depends(),
+    user_data: dict = Depends(token_check)
+):
+    try:
+        message = await transfer_funds_by_account_number(
+            from_account_id=str(account_id),
+            to_account_number=str(data.to_account_number),
+            client_id=user_data['user_id'],
+            amount=data.amount,
+            role=user_data['role']
+        )
+        return {"message": message}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))

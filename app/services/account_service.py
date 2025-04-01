@@ -1,5 +1,5 @@
+import asyncio
 import json
-import time
 import uuid
 
 import httpx
@@ -100,7 +100,7 @@ async def set_primary_account(account_id: str, client_id: str, role: str) -> Non
         response.raise_for_status()
 
 
-async def transfer_funds(from_account_id: str, to_account_id: str, client_id: str, amount: float, role: str) -> str:
+async def _transfer_funds(transfer_data: dict) -> str:
     try:
         connection = await aio_pika.connect_robust(
             host=settings.rabbitmq_account_host,
@@ -110,18 +110,10 @@ async def transfer_funds(from_account_id: str, to_account_id: str, client_id: st
         )
         async with connection:
             channel = await connection.channel()
-
             await channel.declare_queue(settings.transfer_queue_name, durable=True)
             callback_queue = await channel.declare_queue(exclusive=True)
 
             correlation_id = str(uuid.uuid4())
-            transfer_data = {
-                "from_account": from_account_id,
-                "to_account": to_account_id,
-                "clientId": client_id,
-                "amount": amount,
-                "role": role
-            }
             message_body = json.dumps(transfer_data).encode()
             message = Message(
                 message_body,
@@ -129,23 +121,57 @@ async def transfer_funds(from_account_id: str, to_account_id: str, client_id: st
                 reply_to=callback_queue.name,
                 delivery_mode=DeliveryMode.PERSISTENT,
             )
-
             await channel.default_exchange.publish(
                 message,
                 routing_key=settings.transfer_queue_name
             )
 
+            await asyncio.sleep(3)
             try:
-                time.sleep(3)
-
-                response_message = await callback_queue.get(timeout=3)
+                response_message = await asyncio.wait_for(callback_queue.get(), timeout=3)
                 if response_message.correlation_id == correlation_id:
                     response_body = response_message.body.decode()
                     response_data = json.loads(response_body)
                     return f"Transfer successful: {response_data}"
                 else:
                     return "Transfer response received with invalid correlation id"
-            except aio_pika.exceptions.QueueEmpty:
+            except asyncio.TimeoutError:
                 return "Transfer is being processed"
     except Exception as exc:
         raise Exception(f"Transfer failed: {exc}")
+
+
+async def transfer_funds_by_account(from_account_id: str, to_account_id: str, client_id: str, amount: float,
+                                    role: str) -> str:
+    transfer_data = {
+        "from_account": from_account_id,
+        "to_account": to_account_id,
+        "clientId": client_id,
+        "amount": amount,
+        "role": role
+    }
+    return await _transfer_funds(transfer_data)
+
+
+async def transfer_funds_by_client(from_account_id: str, to_client_id: str, client_id: str, amount: float,
+                                   role: str) -> str:
+    transfer_data = {
+        "from_account": from_account_id,
+        "to_clientId": to_client_id,
+        "clientId": client_id,
+        "amount": amount,
+        "role": role
+    }
+    return await _transfer_funds(transfer_data)
+
+
+async def transfer_funds_by_account_number(from_account_id: str, to_account_number: str, client_id: str, amount: float,
+                                           role: str) -> str:
+    transfer_data = {
+        "from_account": from_account_id,
+        "to_account_number": to_account_number,
+        "clientId": client_id,
+        "amount": amount,
+        "role": role
+    }
+    return await _transfer_funds(transfer_data)
