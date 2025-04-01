@@ -132,10 +132,13 @@ async def _transfer_funds(transfer_data: dict) -> str:
                 if response_message.correlation_id == correlation_id:
                     response_body = response_message.body.decode()
                     response_data = json.loads(response_body)
+                    if response_data.get("status") == "failure" or "error" in response_data:
+                        error_msg = response_data.get("error", "Unknown error during transfer")
+                        return f"Transfer failed: {error_msg}"
                     return f"Transfer successful: {response_data}"
                 else:
                     return "Transfer response received with invalid correlation id"
-            except asyncio.TimeoutError:
+            except (asyncio.TimeoutError, aio_pika.exceptions.QueueEmpty):
                 return "Transfer is being processed"
     except Exception as exc:
         raise Exception(f"Transfer failed: {exc}")
