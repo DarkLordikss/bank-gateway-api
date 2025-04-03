@@ -24,13 +24,14 @@ async def get_client_accounts(client_id: str, role: str) -> List[AccountDTO]:
         return [AccountDTO(**item) for item in data]
 
 
-async def create_debit_account(client_id: str, role: str) -> None:
+async def create_debit_account(currency_type: str, client_id: str, role: str) -> None:
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{settings.account_service_url}/accounts",
             params={
                 "clientId": client_id,
-                "role": role
+                "role": role,
+                "currencyType": currency_type
             }
         )
         response.raise_for_status()
@@ -149,7 +150,7 @@ async def transfer_funds_by_account(from_account_id: str, to_account_id: str, cl
     transfer_data = {
         "from_account": from_account_id,
         "to_account": to_account_id,
-        "clientId": client_id,
+        "from_clientId": client_id,
         "amount": amount,
         "role": role
     }
@@ -161,7 +162,7 @@ async def transfer_funds_by_client(from_account_id: str, to_client_id: str, clie
     transfer_data = {
         "from_account": from_account_id,
         "to_clientId": to_client_id,
-        "clientId": client_id,
+        "from_clientId": client_id,
         "amount": amount,
         "role": role
     }
@@ -173,7 +174,7 @@ async def transfer_funds_by_account_number(from_account_id: str, to_account_numb
     transfer_data = {
         "from_account": from_account_id,
         "to_account_number": to_account_number,
-        "clientId": client_id,
+        "from_clientId": client_id,
         "amount": amount,
         "role": role
     }

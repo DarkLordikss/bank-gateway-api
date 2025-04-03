@@ -51,8 +51,11 @@ async def client_accounts(user_data: dict = Depends(token_check)):
 )
 async def client_accounts_concrete(client_id: UUID, user_data: dict = Depends(token_check)):
     try:
-        accounts = await get_client_accounts(str(client_id), user_data['role'])
-        return accounts
+        if user_data['role'] == 'EMPLOYEE':
+            accounts = await get_client_accounts(str(client_id), user_data['role'])
+            return accounts
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
@@ -66,9 +69,9 @@ async def client_accounts_concrete(client_id: UUID, user_data: dict = Depends(to
         500: {"description": "Internal server error"}
     }
 )
-async def create_account(user_data: dict = Depends(token_check)):
+async def create_account(currency_type: str, user_data: dict = Depends(token_check)):
     try:
-        await create_debit_account(user_data['user_id'], user_data['role'])
+        await create_debit_account(currency_type, user_data['user_id'], user_data['role'])
         return {"message": "Account created successfully"}
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)

@@ -38,6 +38,7 @@ class AccountDTO(BaseModel):
     type: str  # "DEBIT" или "CREDIT"
     isPrimary: bool
     createdAt: datetime
+    currencyType: str
 
 
 class TransactionDTO(BaseModel):
