@@ -34,14 +34,17 @@ router = APIRouter(
         500: {"description": "Internal server error"}
     }
 )
-async def get_employee(_: dict = Depends(token_check)):
+async def get_employee(user_data: dict = Depends(token_check)):
     """
     Возвращает список сотрудников.
     Требуется действующий JWT-токен сотрудника.
     """
     try:
-        employees = await get_employees()
-        return employees
+        if user_data['role'] == 'EMPLOYEE':
+            employees = await get_employees()
+            return employees
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
@@ -57,14 +60,17 @@ async def get_employee(_: dict = Depends(token_check)):
 async def employee_set_active(
     employee_id: str = Path(..., description="ID сотрудника"),
     is_active: bool = Query(..., description="Статус активности"),
-    _: dict = Depends(token_check)
+    user_data: dict = Depends(token_check)
 ):
     """
     Обновляет статус активности сотрудника.
     """
     try:
-        await set_employee_active(employee_id, is_active)
-        return {"message": "Employee status updated successfully"}
+        if user_data['role'] == 'EMPLOYEE':
+            await set_employee_active(employee_id, is_active)
+            return {"message": "Employee status updated successfully"}
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
@@ -77,13 +83,16 @@ async def employee_set_active(
         500: {"description": "Internal server error"}
     }
 )
-async def get_clients_endpoint(_: dict = Depends(token_check)):
+async def get_clients_endpoint(user_data: dict = Depends(token_check)):
     """
     Возвращает список клиентов.
     """
     try:
-        clients = await get_clients()
-        return clients
+        if user_data['role'] == 'EMPLOYEE':
+            clients = await get_clients()
+            return clients
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
@@ -99,14 +108,17 @@ async def get_clients_endpoint(_: dict = Depends(token_check)):
 async def client_set_active(
     client_id: str = Path(..., description="ID клиента"),
     is_active: bool = Query(..., description="Статус активности"),
-    _: dict = Depends(token_check)
+    user_data: dict = Depends(token_check)
 ):
     """
     Обновляет статус активности клиента.
     """
     try:
-        await set_client_active(client_id, is_active)
-        return {"message": "Client status updated successfully"}
+        if user_data['role'] == 'EMPLOYEE':
+            await set_client_active(client_id, is_active)
+            return {"message": "Client status updated successfully"}
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
@@ -121,14 +133,17 @@ async def client_set_active(
 )
 async def create_client_endpoint(
     data: CreateClientReq,
-    _: dict = Depends(token_check)
+    user_data: dict = Depends(token_check)
 ):
     """
     Создает нового клиента.
     """
     try:
-        await create_client(data)
-        return {"message": "Client created successfully"}
+        if user_data['role'] == 'EMPLOYEE':
+            await create_client(data)
+            return {"message": "Client created successfully"}
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
@@ -143,14 +158,17 @@ async def create_client_endpoint(
 )
 async def create_employee_endpoint(
     data: CreateEmployeeReq,
-    _: dict = Depends(token_check)
+    user_data: dict = Depends(token_check)
 ):
     """
     Создает нового сотрудника.
     """
     try:
-        await create_employee(data)
-        return {"message": "Employee created successfully"}
+        if user_data['role'] == 'EMPLOYEE':
+            await create_employee(data)
+            return {"message": "Employee created successfully"}
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
@@ -192,8 +210,11 @@ async def get_profile(employee_data: dict = Depends(token_check)):
     Для доступа требуется валидный токен.
     """
     try:
-        profile = await get_employee_profile(employee_data['user_id'])
-        return profile
+        if employee_data['role'] == 'EMPLOYEE':
+            profile = await get_employee_profile(employee_data['user_id'])
+            return profile
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
     except httpx.HTTPStatusError as exc:
         raise HTTPException(
             status_code=exc.response.status_code,
