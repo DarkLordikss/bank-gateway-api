@@ -85,3 +85,14 @@ class TransferByClientReq(BaseModel):
 class TransferByAccountNumberReq(BaseModel):
     to_account_number: UUID
     amount: float
+
+
+class DoExchangeReq(BaseModel):
+    currencyFrom: str
+    currencyTo: str
+    amount: float
+
+
+class DoExchangeResp(BaseModel):
+    amount: float
+    rate: float
