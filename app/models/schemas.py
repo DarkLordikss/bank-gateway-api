@@ -10,7 +10,7 @@ class LoginReq(BaseModel):
     password: str
 
 
-class RegisterClientReq(BaseModel):
+class RegisterReq(BaseModel):
     first_name: str
     last_name: str
     phone_number: str
@@ -46,47 +46,25 @@ class TransactionDTO(BaseModel):
     createdAt: datetime
 
 
-class EmployeeDTO(BaseModel):
-    id: str
-    username: str
-    first_name: str
-    last_name: str
-    phone_number: str
-    created_at: datetime
-    is_active: bool
-    fathername: Optional[str] = None
-
-
-class ClientDTO(BaseModel):
+class UserDTO(BaseModel):
     id: str
     first_name: str
     last_name: str
     phone_number: str
     created_at: datetime
+    created_by: Optional[str] = None
     is_active: bool
+    role: str
     fathername: Optional[str] = None
 
 
-class CreateClientReq(BaseModel):
+class CreateUserReq(BaseModel):
     first_name: str
     last_name: str
     phone_number: str
     password: str
+    role: str
     fathername: Optional[str] = None
-
-
-class CreateEmployeeReq(BaseModel):
-    username: str
-    first_name: str
-    last_name: str
-    phone_number: str
-    password: str
-    fathername: Optional[str] = None
-
-
-class LoginEmployeeReq(BaseModel):
-    username: str
-    password: str
 
 
 class CredentialsDTO(BaseModel):

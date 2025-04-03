@@ -2,12 +2,12 @@ import httpx
 from fastapi import APIRouter, HTTPException, Depends
 
 from app.dependencies import token_check
-from app.models.schemas import LoginReq, RegisterClientReq, JwtToken, ProfileResp
+from app.models.schemas import LoginReq, RegisterReq, JwtToken, ProfileResp
 from app.services.client_service import login_client, register_client, get_client_profile
 
 router = APIRouter(
-    prefix="/client",
-    tags=["Client"]
+    prefix="/user",
+    tags=["User"]
 )
 
 
@@ -45,7 +45,7 @@ async def login(data: LoginReq):
         500: {"description": "Internal server error"}
     }
 )
-async def register(data: RegisterClientReq):
+async def register(data: RegisterReq):
     try:
         token = await register_client(data)
         return token

@@ -2,81 +2,47 @@ import httpx
 from typing import List
 from app.core.config import settings
 from app.models.schemas import (
-    EmployeeDTO,
-    ClientDTO,
-    CreateClientReq,
-    CreateEmployeeReq,
-    LoginEmployeeReq,
-    JwtToken
+    CreateUserReq, UserDTO
 )
 
 
-async def get_employees() -> List[EmployeeDTO]:
+async def get_employees() -> List[UserDTO]:
     async with httpx.AsyncClient() as client:
         response = await client.get(f"{settings.user_service_url}/employee")
         response.raise_for_status()
         data = response.json()
-        return [EmployeeDTO(**item) for item in data]
+        return [UserDTO(**item) for item in data]
 
 
-async def set_employee_active(employee_id: str, is_active: bool) -> None:
+async def get_users() -> List[UserDTO]:
     async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{settings.user_service_url}/employee/active/{employee_id}",
-            params={"is_active": is_active}
-        )
-        response.raise_for_status()
-
-
-async def get_clients() -> List[ClientDTO]:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{settings.user_service_url}/employee/client")
+        response = await client.get(f"{settings.user_service_url}/employee/users")
         response.raise_for_status()
         data = response.json()
-        return [ClientDTO(**item) for item in data]
+        return [UserDTO(**item) for item in data]
 
 
-async def set_client_active(client_id: str, is_active: bool) -> None:
+async def get_clients() -> List[UserDTO]:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{settings.user_service_url}/employee/clients")
+        response.raise_for_status()
+        data = response.json()
+        return [UserDTO(**item) for item in data]
+
+
+async def set_user_active(user_id: str, is_active: bool) -> None:
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"{settings.user_service_url}/employee/client/active/{client_id}",
+            f"{settings.user_service_url}/employee/user/active/{user_id}",
             params={"is_active": is_active}
         )
         response.raise_for_status()
 
 
-async def create_client(data: CreateClientReq) -> None:
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{settings.user_service_url}/employee/client/create",
-            json=data.dict()
-        )
-        response.raise_for_status()
-
-
-async def create_employee(data: CreateEmployeeReq) -> None:
+async def create_user(data: CreateUserReq) -> None:
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{settings.user_service_url}/employee/create",
             json=data.dict()
         )
         response.raise_for_status()
-
-
-async def login_employee(data: LoginEmployeeReq) -> JwtToken:
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{settings.user_service_url}/employee/login",
-            json=data.dict()
-        )
-        response.raise_for_status()
-        return JwtToken(**response.json())
-
-
-async def get_employee_profile(employee_id: str) -> EmployeeDTO:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"{settings.user_service_url}/employee/profile/{employee_id}"
-        )
-        response.raise_for_status()
-        return EmployeeDTO(**response.json())
