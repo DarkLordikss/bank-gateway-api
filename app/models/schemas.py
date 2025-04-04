@@ -84,7 +84,7 @@ class TransferByClientReq(BaseModel):
 
 
 class TransferByAccountNumberReq(BaseModel):
-    to_account_number: UUID
+    to_account_number: str
     amount: float
 
 
