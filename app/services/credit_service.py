@@ -87,7 +87,6 @@ async def get_credit(credit_id: UUID) -> CreditDTO:
             f"{settings.credit_service_url}/credit/{credit_id}"
         )
         response.raise_for_status()
-        print(response.json())
         return CreditDTO(**response.json())
 
 
@@ -97,6 +96,7 @@ async def get_credits(user_id: UUID) -> List[CreditDTO]:
             f"{settings.credit_service_url}/credits/{user_id}"
         )
         response.raise_for_status()
+        print(response.json())
         return [CreditDTO(**credit) for credit in response.json()['credits']]
 
 
