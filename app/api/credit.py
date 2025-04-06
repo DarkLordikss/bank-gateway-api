@@ -7,7 +7,7 @@ from app.dependencies import token_check
 from app.models.schemas import (
     CreditTariffDTO,
     TakeCreditDTO,
-    CreditDTO, TakeCreditAPIDTO, LimitDTO, UuidDTO, CreditPaymentDTO
+    CreditDTO, TakeCreditAPIDTO, LimitDTO, UuidDTO, CreditPaymentDTO, ShortCreditTariffDTO
 )
 from app.services.credit_service import (
     get_tariffs,
@@ -23,7 +23,7 @@ router = APIRouter(
 )
 
 
-@router.get("/tariffs", response_model=List[CreditTariffDTO])
+@router.get("/tariffs", response_model=List[ShortCreditTariffDTO])
 async def api_get_tariffs(_: dict = Depends(token_check)):
     """
     Получает список кредитных тарифов.

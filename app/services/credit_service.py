@@ -4,16 +4,16 @@ from uuid import UUID
 import httpx
 from app.core.config import settings
 from app.models.schemas import CreditTariffDTO, CreditDTO, CreateCreditTariffAPIDTO, EditCreditTariffDTO, \
-    TakeCreditAPIDTO, UuidDTO, LimitDTO, CreditPaymentDTO
+    TakeCreditAPIDTO, UuidDTO, LimitDTO, CreditPaymentDTO, ShortCreditTariffDTO
 
 
-async def get_tariffs() -> List[CreditTariffDTO]:
+async def get_tariffs() -> List[ShortCreditTariffDTO]:
     async with httpx.AsyncClient() as client:
         response = await client.get(
             f"{settings.credit_service_url}/tariffs"
         )
         response.raise_for_status()
-        return [CreditTariffDTO(**tariff) for tariff in response.json()['tariffs']]
+        return [ShortCreditTariffDTO(**tariff) for tariff in response.json()['tariffs']]
 
 
 async def get_tariff(tariff_id: UUID) -> CreditTariffDTO:
@@ -54,7 +54,7 @@ async def delete_tariff(tariff_id: UUID) -> UuidDTO:
             f"{settings.credit_service_url}/tariffs/{tariff_id}"
         )
         response.raise_for_status()
-        return UuidDTO(id=UUID(response.json()['tariff_id']))
+        return UuidDTO(id=UUID(response.json()['deleted_id']))
 
 
 async def get_credit_limits(user_id: UUID) -> LimitDTO:

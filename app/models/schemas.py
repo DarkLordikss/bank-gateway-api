@@ -107,6 +107,12 @@ class CreditTariffDTO(BaseModel):
     months_count: int
 
 
+class ShortCreditTariffDTO(BaseModel):
+    id: UUID
+    name: str
+    interest_rate: float
+
+
 class CreateCreditTariffAPIDTO(BaseModel):
     employee_id: UUID
     name: str
