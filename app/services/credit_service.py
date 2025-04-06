@@ -87,6 +87,7 @@ async def get_credit(credit_id: UUID) -> CreditDTO:
             f"{settings.credit_service_url}/credit/{credit_id}"
         )
         response.raise_for_status()
+        print(response.json())
         return CreditDTO(**response.json())
 
 
