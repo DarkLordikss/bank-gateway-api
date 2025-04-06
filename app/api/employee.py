@@ -1,9 +1,12 @@
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, Depends, Query, Path
 import httpx
 from typing import List
 from app.models.schemas import (
-    CreateUserReq, UserDTO
+    CreateUserReq, UserDTO, CreateCreditTariffDTO, CreateCreditTariffAPIDTO, EditCreditTariffDTO, UuidDTO
 )
+from app.services.credit_service import edit_tariff, add_tariff, delete_tariff
 from app.services.employee_service import (
     get_employees,
     get_clients,
@@ -131,6 +134,53 @@ async def create_user_endpoint(
         if user_data['role'] == 'EMPLOYEE':
             await create_user(data)
             return {"message": "User created successfully"}
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
+
+@router.post("/tariffs", response_model=UuidDTO)
+async def api_add_tariff(data: CreateCreditTariffDTO, user_data: dict = Depends(token_check)):
+    """
+    Добавляет новый кредитный тариф.
+    """
+    try:
+        if user_data['role'] == 'EMPLOYEE':
+            api_data = CreateCreditTariffAPIDTO(
+                **data.dict(),
+                employee_id=UUID(user_data['user_id'])
+            )
+
+            return await add_tariff(api_data)
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
+
+@router.put("/tariffs/{tariff_id}", response_model=UuidDTO)
+async def api_edit_tariff(tariff_id: UUID, data: EditCreditTariffDTO, user_data: dict = Depends(token_check)):
+    """
+    Редактирует существующий кредитный тариф.
+    """
+    try:
+        if user_data['role'] == 'EMPLOYEE':
+            return await edit_tariff(data, tariff_id)
+        else:
+            raise HTTPException(status_code=403, detail='No permission')
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
+
+@router.delete("/tariffs/{tariff_id}", response_model=UuidDTO)
+async def api_delete_tariff(tariff_id: UUID, user_data: dict = Depends(token_check)):
+    """
+    Удаляет кредитный тариф по его ID.
+    """
+    try:
+        if user_data['role'] == 'EMPLOYEE':
+            return await delete_tariff(tariff_id)
         else:
             raise HTTPException(status_code=403, detail='No permission')
     except httpx.HTTPStatusError as exc:

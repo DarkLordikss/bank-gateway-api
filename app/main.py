@@ -6,7 +6,7 @@ load_dotenv()
 
 import uvicorn
 from fastapi import FastAPI
-from app.api import user, account, employee, auth, exchange
+from app.api import user, account, employee, auth, exchange, credit
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -17,6 +17,7 @@ app.include_router(account.router)
 app.include_router(employee.router)
 app.include_router(auth.router)
 app.include_router(exchange.router)
+app.include_router(credit.router)
 
 origins = ["*"]
 

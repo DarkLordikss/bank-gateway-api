@@ -1,0 +1,90 @@
+from typing import List
+from uuid import UUID
+
+import httpx
+from app.core.config import settings
+from app.models.schemas import CreditTariffDTO, CreditDTO, CreateCreditTariffAPIDTO, EditCreditTariffDTO, \
+    TakeCreditAPIDTO, UuidDTO, LimitDTO
+
+
+async def get_tariffs() -> List[CreditTariffDTO]:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.credit_service_url}/tariffs"
+        )
+        response.raise_for_status()
+        return [CreditTariffDTO(**tariff) for tariff in response.json()['tariffs']]
+
+
+async def get_tariff(tariff_id: UUID) -> CreditTariffDTO:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.credit_service_url}/tariffs/{tariff_id}"
+        )
+        response.raise_for_status()
+        return [CreditTariffDTO(**tariff) for tariff in response.json()['tariffs']][0]
+
+
+async def add_tariff(data: CreateCreditTariffAPIDTO) -> UuidDTO:
+    async with httpx.AsyncClient() as client:
+        data = data.dict()
+        data['employee_id'] = str(data['employee_id'])
+
+        response = await client.post(
+            f"{settings.credit_service_url}/tariffs",
+            json=data
+        )
+        response.raise_for_status()
+        return UuidDTO(id=UUID(response.json()['tariff_id']))
+
+
+async def edit_tariff(data: EditCreditTariffDTO, tariff_id: UUID) -> UuidDTO:
+    async with httpx.AsyncClient() as client:
+        response = await client.put(
+            f"{settings.credit_service_url}/tariff/{tariff_id}",
+            json=data.dict()
+        )
+        response.raise_for_status()
+        return UuidDTO(id=UUID(response.json()['tariff_id']))
+
+
+async def delete_tariff(tariff_id: UUID) -> UuidDTO:
+    async with httpx.AsyncClient() as client:
+        response = await client.delete(
+            f"{settings.credit_service_url}/tariffs/{tariff_id}"
+        )
+        response.raise_for_status()
+        return UuidDTO(id=UUID(response.json()['tariff_id']))
+
+
+async def get_credit_limits(user_id: UUID) -> LimitDTO:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.credit_service_url}/credit-limit/{user_id}"
+        )
+        response.raise_for_status()
+        return LimitDTO(limit=float(response.json()['limit']))
+
+
+async def take_credit(data: TakeCreditAPIDTO) -> UuidDTO:
+    async with httpx.AsyncClient() as client:
+        data = data.dict()
+        data['user_id'] = str(data['user_id'])
+        data['tariff_id'] = str(data['tariff_id'])
+        data['write_off_account_id'] = str(data['write_off_account_id'])
+
+        response = await client.post(
+            f"{settings.credit_service_url}/credit",
+            json=data
+        )
+        response.raise_for_status()
+        return UuidDTO(id=UUID(response.json()['credit_id']))
+
+
+async def get_credits(user_id: UUID) -> CreditDTO:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.credit_service_url}/credit/{user_id}"
+        )
+        response.raise_for_status()
+        return CreditDTO(**response.json())

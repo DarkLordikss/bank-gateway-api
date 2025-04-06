@@ -97,3 +97,58 @@ class DoExchangeReq(BaseModel):
 class DoExchangeResp(BaseModel):
     amount: float
     rate: float
+
+
+class CreditTariffDTO(BaseModel):
+    id: UUID
+    employee_id: UUID
+    name: str
+    interest_rate: float
+    months_count: int
+
+
+class CreateCreditTariffAPIDTO(BaseModel):
+    employee_id: UUID
+    name: str
+    interest_rate: float
+    months_count: int
+
+
+class CreateCreditTariffDTO(BaseModel):
+    name: str
+    interest_rate: float
+    months_count: int
+
+
+class EditCreditTariffDTO(BaseModel):
+    name: str
+    interest_rate: float
+    months_count: int
+
+
+class TakeCreditDTO(BaseModel):
+    tariff_id: UUID
+    amount: float
+    write_off_account_id: UUID
+
+
+class TakeCreditAPIDTO(BaseModel):
+    user_id: UUID
+    tariff_id: UUID
+    amount: float
+    write_off_account_id: UUID
+
+
+class CreditDTO(BaseModel):
+    id: UUID
+    user_id: UUID
+    tariff_id: float
+    remaining_dept: UUID
+
+
+class UuidDTO(BaseModel):
+    id: UUID
+
+
+class LimitDTO(BaseModel):
+    limit: float
