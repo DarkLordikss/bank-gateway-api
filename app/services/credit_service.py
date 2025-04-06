@@ -12,6 +12,7 @@ async def get_tariffs() -> List[ShortCreditTariffDTO]:
         response = await client.get(
             f"{settings.credit_service_url}/tariffs"
         )
+        print(response.json())
         response.raise_for_status()
         return [ShortCreditTariffDTO(**tariff) for tariff in response.json()['tariffs']]
 
@@ -21,6 +22,7 @@ async def get_tariff(tariff_id: UUID) -> CreditTariffDTO:
         response = await client.get(
             f"{settings.credit_service_url}/tariffs/{tariff_id}"
         )
+        print(response.json())
         response.raise_for_status()
         return [CreditTariffDTO(**tariff) for tariff in response.json()['tariff']][0]
 
@@ -34,6 +36,7 @@ async def add_tariff(data: CreateCreditTariffAPIDTO) -> UuidDTO:
             f"{settings.credit_service_url}/tariffs",
             json=data
         )
+        print(response.json())
         response.raise_for_status()
         return UuidDTO(id=UUID(response.json()['tariff_id']))
 
@@ -49,6 +52,7 @@ async def edit_tariff(data: EditCreditTariffDTO, tariff_id: UUID) -> UuidDTO:
             f"{settings.credit_service_url}/tariffs/{tariff_id}",
             json=data
         )
+        print(response.json())
         response.raise_for_status()
         return UuidDTO(id=UUID(response.json()['updated_id']))
 
@@ -58,6 +62,7 @@ async def delete_tariff(tariff_id: UUID) -> UuidDTO:
         response = await client.delete(
             f"{settings.credit_service_url}/tariffs/{tariff_id}"
         )
+        print(response.json())
         response.raise_for_status()
         return UuidDTO(id=UUID(response.json()['deleted_id']))
 
@@ -67,6 +72,7 @@ async def get_credit_limits(user_id: UUID) -> LimitDTO:
         response = await client.get(
             f"{settings.credit_service_url}/credit-limit/{user_id}"
         )
+        print(response.json())
         response.raise_for_status()
         return LimitDTO(limit=float(response.json()['limit']))
 
@@ -83,7 +89,7 @@ async def take_credit(data: TakeCreditAPIDTO) -> MessageDTO:
             json=data
         )
         response.raise_for_status()
-
+        print(response.json())
         response_data = response.json()
 
         if response_data['success']:
@@ -98,6 +104,7 @@ async def get_credit(credit_id: UUID) -> CreditDTO:
             f"{settings.credit_service_url}/credit/{credit_id}"
         )
         response.raise_for_status()
+        print(response.json())
         return CreditDTO(**response.json()['credit'][0])
 
 
@@ -117,4 +124,5 @@ async def get_credit_payment_history(credit_id: UUID) -> List[CreditPaymentDTO]:
             f"{settings.credit_service_url}/get-payment-history/{credit_id}"
         )
         response.raise_for_status()
+        print(response.json())
         return [CreditPaymentDTO(**payment) for payment in response.json()['credit_payments']]
