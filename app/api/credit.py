@@ -7,7 +7,7 @@ from app.dependencies import token_check
 from app.models.schemas import (
     CreditTariffDTO,
     TakeCreditDTO,
-    CreditDTO, TakeCreditAPIDTO, LimitDTO, UuidDTO, CreditPaymentDTO, ShortCreditTariffDTO, MessageDTO
+    CreditDTO, TakeCreditAPIDTO, LimitDTO, UuidDTO, CreditPaymentDTO, ShortCreditTariffDTO
 )
 from app.services.credit_service import (
     get_tariffs,
@@ -56,7 +56,7 @@ async def api_get_credit_limits(user_data: dict = Depends(token_check)):
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
 
-@router.post("", response_model=MessageDTO)
+@router.post("", response_model=UuidDTO)
 async def api_take_credit(data: TakeCreditDTO, user_data: dict = Depends(token_check)):
     """
     Оформляет заявку на кредит.

@@ -127,9 +127,9 @@ class CreateCreditTariffDTO(BaseModel):
 
 
 class EditCreditTariffDTO(BaseModel):
-    name: str = None
-    interest_rate: float = None
-    months_count: int = None
+    name: str
+    interest_rate: float
+    months_count: int
 
 
 class TakeCreditDTO(BaseModel):
@@ -156,10 +156,6 @@ class CreditDTO(BaseModel):
 
 class UuidDTO(BaseModel):
     id: UUID
-
-
-class MessageDTO(BaseModel):
-    message: str
 
 
 class LimitDTO(BaseModel):

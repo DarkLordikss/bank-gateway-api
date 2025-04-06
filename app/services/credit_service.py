@@ -4,7 +4,7 @@ from uuid import UUID
 import httpx
 from app.core.config import settings
 from app.models.schemas import CreditTariffDTO, CreditDTO, CreateCreditTariffAPIDTO, EditCreditTariffDTO, \
-    TakeCreditAPIDTO, UuidDTO, LimitDTO, CreditPaymentDTO, ShortCreditTariffDTO, MessageDTO
+    TakeCreditAPIDTO, UuidDTO, LimitDTO, CreditPaymentDTO, ShortCreditTariffDTO
 
 
 async def get_tariffs() -> List[ShortCreditTariffDTO]:
@@ -40,17 +40,12 @@ async def add_tariff(data: CreateCreditTariffAPIDTO) -> UuidDTO:
 
 async def edit_tariff(data: EditCreditTariffDTO, tariff_id: UUID) -> UuidDTO:
     async with httpx.AsyncClient() as client:
-        data = data.dict()
-        if data['name'] is None: del data['name']
-        if data['interest_rate'] is None: del data['interest_rate']
-        if data['months_count'] is None: del data['months_count']
-
         response = await client.put(
-            f"{settings.credit_service_url}/tariffs/{tariff_id}",
-            json=data
+            f"{settings.credit_service_url}/tariff/{tariff_id}",
+            json=data.dict()
         )
         response.raise_for_status()
-        return UuidDTO(id=UUID(response.json()['updated_id']))
+        return UuidDTO(id=UUID(response.json()['tariff_id']))
 
 
 async def delete_tariff(tariff_id: UUID) -> UuidDTO:
@@ -71,7 +66,7 @@ async def get_credit_limits(user_id: UUID) -> LimitDTO:
         return LimitDTO(limit=float(response.json()['limit']))
 
 
-async def take_credit(data: TakeCreditAPIDTO) -> MessageDTO:
+async def take_credit(data: TakeCreditAPIDTO) -> UuidDTO:
     async with httpx.AsyncClient() as client:
         data = data.dict()
         data['user_id'] = str(data['user_id'])
@@ -83,13 +78,7 @@ async def take_credit(data: TakeCreditAPIDTO) -> MessageDTO:
             json=data
         )
         response.raise_for_status()
-
-        response_data = response.json()
-
-        if response_data['success']:
-            return MessageDTO(message='Success')
-        else:
-            return MessageDTO(message='Not approved')
+        return UuidDTO(id=UUID(response.json()['credit_id']))
 
 
 async def get_credit(credit_id: UUID) -> CreditDTO:
@@ -98,7 +87,7 @@ async def get_credit(credit_id: UUID) -> CreditDTO:
             f"{settings.credit_service_url}/credit/{credit_id}"
         )
         response.raise_for_status()
-        return CreditDTO(**response.json()['credit'][0])
+        return CreditDTO(**response.json())
 
 
 async def get_credits(user_id: UUID) -> List[CreditDTO]:
