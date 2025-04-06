@@ -81,10 +81,19 @@ async def take_credit(data: TakeCreditAPIDTO) -> UuidDTO:
         return UuidDTO(id=UUID(response.json()['credit_id']))
 
 
+async def get_credit(credit_id: UUID) -> CreditDTO:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.credit_service_url}/credit/{credit_id}"
+        )
+        response.raise_for_status()
+        return CreditDTO(**response.json())
+
+
 async def get_credits(user_id: UUID) -> List[CreditDTO]:
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"{settings.credit_service_url}/credit/{user_id}"
+            f"{settings.credit_service_url}/credits/{user_id}"
         )
         response.raise_for_status()
         return [CreditDTO(**credit) for credit in response.json()['credits']]

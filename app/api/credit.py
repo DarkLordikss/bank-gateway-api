@@ -14,7 +14,7 @@ from app.services.credit_service import (
     get_tariff,
     get_credit_limits,
     take_credit,
-    get_credits, get_credit_payment_history
+    get_credit, get_credit_payment_history, get_credits
 )
 
 router = APIRouter(
@@ -83,6 +83,17 @@ async def api_get_credits(user_data: dict = Depends(token_check)):
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
 
+@router.get("/concrete/{credit_id}", response_model=CreditDTO)
+async def api_get_credit(credit_id: UUID, _: dict = Depends(token_check)):
+    """
+    Получает информацию о конкретном кредите.
+    """
+    try:
+        return await get_credit(credit_id)
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
+
 @router.get("/history/{credit_id}", response_model=List[CreditPaymentDTO])
 async def api_get_history(credit_id: UUID, _: dict = Depends(token_check)):
     """
@@ -92,4 +103,3 @@ async def api_get_history(credit_id: UUID, _: dict = Depends(token_check)):
         return await get_credit_payment_history(credit_id)
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
-    
