@@ -30,3 +30,16 @@ async def get_client_profile(client_id: str) -> ProfileResp:
         )
         response.raise_for_status()
         return ProfileResp(**response.json())
+
+
+async def get_account_id_by_phone(phone_number: str) -> None:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.user_service_url}/find",
+            params={
+                "phone_number": phone_number
+            }
+        )
+        response.raise_for_status()
+
+        return response.json()['id']

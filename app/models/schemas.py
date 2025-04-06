@@ -78,8 +78,8 @@ class TransferByAccountReq(BaseModel):
     amount: float
 
 
-class TransferByClientReq(BaseModel):
-    to_clientId: UUID
+class TransferByPhoneNumberReq(BaseModel):
+    phone_number: str
     amount: float
 
 

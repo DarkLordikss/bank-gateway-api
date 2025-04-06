@@ -6,7 +6,7 @@ import httpx
 
 from app.dependencies import token_check
 from app.models.schemas import AccountDTO, TransactionDTO, TransferByAccountNumberReq, \
-    TransferByClientReq, TransferByAccountReq
+    TransferByPhoneNumberReq, TransferByAccountReq
 from app.services.account_service import (
     get_client_accounts,
     create_debit_account,
@@ -16,6 +16,7 @@ from app.services.account_service import (
     delete_account, set_primary_account, transfer_funds_by_account_number, transfer_funds_by_client,
     transfer_funds_by_account,
 )
+from app.services.client_service import get_account_id_by_phone
 
 router = APIRouter(
     prefix="/accounts",
@@ -209,7 +210,7 @@ async def transfer_by_account(
 
 
 @router.post(
-    "/{account_id}/transfer/by-client",
+    "/{account_id}/transfer/by-phone-number",
     responses={
         200: {"description": "Transfer processed successfully or is in processing"},
         400: {"description": "Bad request"},
@@ -217,15 +218,17 @@ async def transfer_by_account(
         500: {"description": "Internal server error"}
     }
 )
-async def transfer_by_client(
+async def transfer_by_phone_number(
     account_id: UUID = Path(..., description="ID счета отправителя"),
-    data: TransferByClientReq = Depends(),
+    data: TransferByPhoneNumberReq = Depends(),
     user_data: dict = Depends(token_check)
 ):
     try:
+        user_id = await get_account_id_by_phone(data.phone_number)
+
         message = await transfer_funds_by_client(
             from_account_id=str(account_id),
-            to_client_id=str(data.to_clientId),
+            to_client_id=str(user_id),
             client_id=user_data['user_id'],
             amount=data.amount,
             role=user_data['role']
