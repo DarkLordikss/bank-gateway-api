@@ -149,7 +149,7 @@ class CreditDTO(BaseModel):
     id: UUID
     user_id: UUID
     tariff_id: UUID
-    remaining_dept: float
+    remaining_debt: float
     amount: float
     write_off_account: UUID
 

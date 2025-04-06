@@ -1,0 +1,9 @@
+{'credits': [
+        {'id': '1921f9fe-3d97-4baa-b262-a394b21e8ff4', 'user_id': 'd8561882-541f-4cce-9f74-533f206f450b', 'tariff_id': '1cd634a6-0e47-468f-baf8-1c689757a86e', 'amount': 1000.5, 'write_off_account': 'fd16a453-0b5e-40c5-8a8b-a943da19120c', 'remaining_debt': 895.81
+        },
+        {'id': '122d420d-d113-4b86-ae05-ecacdef2bfab', 'user_id': 'd8561882-541f-4cce-9f74-533f206f450b', 'tariff_id': '1cd634a6-0e47-468f-baf8-1c689757a86e', 'amount': 10000.0, 'write_off_account': 'fd16a453-0b5e-40c5-8a8b-a943da19120c', 'remaining_debt': 10000.0
+        },
+        {'id': 'cc81c843-a94f-46a5-9ab2-ae428c000a0d', 'user_id': 'd8561882-541f-4cce-9f74-533f206f450b', 'tariff_id': '1cd634a6-0e47-468f-baf8-1c689757a86e', 'amount': 10000.0, 'write_off_account': 'fd16a453-0b5e-40c5-8a8b-a943da19120c', 'remaining_debt': 10000.0
+        }
+    ]
+}
