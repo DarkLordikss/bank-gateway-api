@@ -7,14 +7,14 @@ from app.dependencies import token_check
 from app.models.schemas import (
     CreditTariffDTO,
     TakeCreditDTO,
-    CreditDTO, TakeCreditAPIDTO, LimitDTO, UuidDTO
+    CreditDTO, TakeCreditAPIDTO, LimitDTO, UuidDTO, CreditPaymentDTO
 )
 from app.services.credit_service import (
     get_tariffs,
     get_tariff,
     get_credit_limits,
     take_credit,
-    get_credits
+    get_credits, get_credit_payment_history
 )
 
 router = APIRouter(
@@ -45,7 +45,7 @@ async def api_get_tariff(tariff_id: UUID, _: dict = Depends(token_check)):
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
 
-@router.get("/credit-limit", response_model=LimitDTO)
+@router.get("/limit", response_model=LimitDTO)
 async def api_get_credit_limits(user_data: dict = Depends(token_check)):
     """
     Получает кредитный лимит для заданного пользователя.
@@ -72,12 +72,24 @@ async def api_take_credit(data: TakeCreditDTO, user_data: dict = Depends(token_c
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
 
-@router.get("", response_model=CreditDTO)
+@router.get("", response_model=List[CreditDTO])
 async def api_get_credits(user_data: dict = Depends(token_check)):
     """
-    Получает информацию о кредите пользователя.
+    Получает информацию о кредитах пользователя.
     """
     try:
         return await get_credits(UUID(user_data['user_id']))
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
+
+@router.get("/history/{credit_id}", response_model=List[CreditPaymentDTO])
+async def api_get_history(credit_id: UUID, _: dict = Depends(token_check)):
+    """
+    Получает историю платежей по кредиту
+    """
+    try:
+        return await get_credit_payment_history(credit_id)
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+    

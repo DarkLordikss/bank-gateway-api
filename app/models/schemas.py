@@ -152,3 +152,11 @@ class UuidDTO(BaseModel):
 
 class LimitDTO(BaseModel):
     limit: float
+
+
+class CreditPaymentDTO(BaseModel):
+    id: UUID
+    user_id: UUID
+    summ: float
+    status: bool
+    payment_date: datetime

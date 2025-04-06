@@ -4,7 +4,7 @@ from uuid import UUID
 import httpx
 from app.core.config import settings
 from app.models.schemas import CreditTariffDTO, CreditDTO, CreateCreditTariffAPIDTO, EditCreditTariffDTO, \
-    TakeCreditAPIDTO, UuidDTO, LimitDTO
+    TakeCreditAPIDTO, UuidDTO, LimitDTO, CreditPaymentDTO
 
 
 async def get_tariffs() -> List[CreditTariffDTO]:
@@ -22,7 +22,7 @@ async def get_tariff(tariff_id: UUID) -> CreditTariffDTO:
             f"{settings.credit_service_url}/tariffs/{tariff_id}"
         )
         response.raise_for_status()
-        return [CreditTariffDTO(**tariff) for tariff in response.json()['tariffs']][0]
+        return [CreditTariffDTO(**tariff) for tariff in response.json()['tariff']][0]
 
 
 async def add_tariff(data: CreateCreditTariffAPIDTO) -> UuidDTO:
@@ -81,10 +81,19 @@ async def take_credit(data: TakeCreditAPIDTO) -> UuidDTO:
         return UuidDTO(id=UUID(response.json()['credit_id']))
 
 
-async def get_credits(user_id: UUID) -> CreditDTO:
+async def get_credits(user_id: UUID) -> List[CreditDTO]:
     async with httpx.AsyncClient() as client:
         response = await client.get(
             f"{settings.credit_service_url}/credit/{user_id}"
         )
         response.raise_for_status()
-        return CreditDTO(**response.json())
+        return [CreditDTO(**credit) for credit in response.json()['credits']]
+
+
+async def get_credit_payment_history(credit_id: UUID) -> List[CreditPaymentDTO]:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.credit_service_url}/get-payment-history/{credit_id}"
+        )
+        response.raise_for_status()
+        return [CreditPaymentDTO(**payment) for payment in response.json()['credit_payments']]
