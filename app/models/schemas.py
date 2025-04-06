@@ -148,8 +148,10 @@ class TakeCreditAPIDTO(BaseModel):
 class CreditDTO(BaseModel):
     id: UUID
     user_id: UUID
-    tariff_id: float
-    remaining_dept: UUID
+    tariff_id: UUID
+    remaining_dept: float
+    amount: float
+    write_off_account: UUID
 
 
 class UuidDTO(BaseModel):
