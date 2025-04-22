@@ -1,45 +1,38 @@
-import httpx
 from app.core.config import settings
 from app.models.schemas import LoginReq, RegisterReq, JwtToken, ProfileResp
+from app.utils.http_retry import http_request_with_retry
 
 
 async def login_client(data: LoginReq) -> JwtToken:
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{settings.user_service_url}/login",
-            json=data.dict()
-        )
-        response.raise_for_status()
-        return JwtToken(**response.json())
+    response = await http_request_with_retry(
+        method="post",
+        url=f"{settings.user_service_url}/login",
+        json=data.dict()
+    )
+    return JwtToken(**response.json())
 
 
 async def register_client(data: RegisterReq) -> JwtToken:
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{settings.user_service_url}/register",
-            json=data.dict()
-        )
-        response.raise_for_status()
-        return JwtToken(**response.json())
+    response = await http_request_with_retry(
+        method="post",
+        url=f"{settings.user_service_url}/register",
+        json=data.dict()
+    )
+    return JwtToken(**response.json())
 
 
 async def get_client_profile(client_id: str) -> ProfileResp:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"{settings.user_service_url}/profile/{client_id}"
-        )
-        response.raise_for_status()
-        return ProfileResp(**response.json())
+    response = await http_request_with_retry(
+        method="get",
+        url=f"{settings.user_service_url}/profile/{client_id}"
+    )
+    return ProfileResp(**response.json())
 
 
 async def get_account_id_by_phone(phone_number: str) -> None:
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"{settings.user_service_url}/find",
-            params={
-                "phone_number": phone_number
-            }
-        )
-        response.raise_for_status()
-
-        return response.json()['id']
+    response = await http_request_with_retry(
+        method="get",
+        url=f"{settings.user_service_url}/find",
+        params={"phone_number": phone_number}
+    )
+    return response.json()['id']

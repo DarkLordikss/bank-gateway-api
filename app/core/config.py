@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     rabbitmq_account_login: str = os.environ['RABBITMQ_ACCOUNT_LOGIN']
     rabbitmq_account_password: str = os.environ['RABBITMQ_ACCOUNT_PASSWORD']
     transfer_queue_name: str = os.environ['TRANSFER_QUEUE']
+    retries: int = int(os.environ['RETRIES'])
+    wait_seconds: int = int(os.environ['WAIT_SECONDS'])
 
 
 settings = Settings()
