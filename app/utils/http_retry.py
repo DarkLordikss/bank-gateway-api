@@ -8,8 +8,13 @@ from app.core.config import settings
     wait=wait_fixed(settings.wait_seconds),
     retry=retry_if_exception_type(httpx.RequestError)
 )
-async def http_request_with_retry(method: str, url: str, params: dict = None) -> httpx.Response:
+async def http_request_with_retry(method: str, url: str, json: dict = None, params: dict = None) -> httpx.Response:
     async with httpx.AsyncClient() as client:
-        response = await getattr(client, method)(url, params=params)
+        if method == "get":
+            response = await client.get(url, params=params)
+        elif method == "post":
+            response = await client.post(url, json=json, params=params)
+        else:
+            raise ValueError(f"Unsupported HTTP method: {method}")
         response.raise_for_status()
         return response
