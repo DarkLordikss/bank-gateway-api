@@ -1,12 +1,11 @@
 import httpx
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
+from tenacity import retry, stop_after_attempt, wait_fixed
 from app.core.config import settings
 
 
 @retry(
     stop=stop_after_attempt(settings.retries),
-    wait=wait_fixed(settings.wait_seconds),
-    retry=retry_if_exception_type(httpx.RequestError)
+    wait=wait_fixed(settings.wait_seconds)
 )
 async def http_request_with_retry(method: str, url: str, json: dict = None, params: dict = None) -> httpx.Response:
     async with httpx.AsyncClient() as client:
