@@ -5,12 +5,19 @@ load_dotenv()
 
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from app.api import user, account, employee, auth, exchange, credit
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 
 app = FastAPI(title="Bank API Gateway", version="1.0.0")
+
+
+@app.get("/metrics")
+def metrics():
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
 
 app.include_router(user.router)
 app.include_router(account.router)
