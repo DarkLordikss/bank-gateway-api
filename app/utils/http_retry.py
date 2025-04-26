@@ -52,6 +52,16 @@ async def http_request_with_retry(method: str, url: str, json: dict = None, para
 
                 return response
         except Exception as e:
+            http_requests_seconds_count.labels(
+                **{
+                    "method": method.lower(),
+                    "endpoint": url,
+                    "status": "500"
+                }
+            ).inc()
+
+            response.raise_for_status()
+
             http_requests_errors_total.labels(
                 method=method.lower(),
                 endpoint=url,
