@@ -5,7 +5,7 @@ from prometheus_client import Gauge, Summary
 
 
 http_requests_seconds_count = Gauge(
-    "http_server_requests_seconds_count",
+    "http_server_requests_active_seconds_count",
     "Total number of HTTP requests attempted",
     ["method", "endpoint", "status"]
 )
