@@ -44,7 +44,7 @@ async def http_request_with_retry(method: str, url: str, json: dict = None, para
                     {
                         "method": method.lower(),
                         "endpoint": url,
-                        "status": response.status_code
+                        "status": str(response.status_code)
                     }
                 ).inc()
 
@@ -52,6 +52,13 @@ async def http_request_with_retry(method: str, url: str, json: dict = None, para
 
                 return response
         except Exception as e:
+            http_requests_seconds_count.labels(
+                {
+                    "method": method.lower(),
+                    "endpoint": url,
+                    "status": "500"
+                }
+            ).inc()
             http_requests_errors_total.labels(
                 method=method.lower(),
                 endpoint=url,
