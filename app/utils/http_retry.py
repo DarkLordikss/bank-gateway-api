@@ -1,26 +1,25 @@
 import httpx
 from tenacity import retry, stop_after_attempt, wait_fixed
 from app.core.config import settings
-from prometheus_client import Counter, Summary
+from prometheus_client import Gauge, Counter, Summary
 
 
-http_requests_total = Counter(
-    "http_requests_total",
+# ⚠️ Используем Gauge вместо Counter, чтобы избежать _total/_created
+http_requests_seconds_count = Gauge(
+    "http_requests_seconds_count",
     "Total number of HTTP requests attempted",
     ["method", "endpoint"]
 )
 
-# Считаем количество ошибок
-http_requests_errors_total = Counter(
+http_requests_errors_total = Gauge(
     "http_requests_errors_total",
     "Total number of failed HTTP requests",
     ["method", "endpoint", "error_type"]
 )
 
-# Считаем длительность активных запросов
-http_requests_duration_seconds = Summary(
-    "http_requests_duration_seconds",
-    "Duration of HTTP requests in seconds",
+http_requests_active_seconds = Summary(
+    "http_requests_active_seconds",
+    "Time spent on HTTP requests",
     ["method", "endpoint"]
 )
 
@@ -32,9 +31,10 @@ http_requests_duration_seconds = Summary(
 async def http_request_with_retry(method: str, url: str, json: dict = None, params: dict = None) -> httpx.Response:
     labels = {"method": method.lower(), "endpoint": url}
 
-    http_requests_total.labels(**labels).inc()
+    # Теперь Gauge, инкремент вручную
+    http_requests_seconds_count.labels(**labels).inc()
 
-    with http_requests_duration_seconds.labels(**labels).time():
+    with http_requests_active_seconds.labels(**labels).time():
         try:
             async with httpx.AsyncClient() as client:
                 if method.lower() == "get":
