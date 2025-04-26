@@ -1,13 +1,13 @@
 import httpx
 from tenacity import retry, stop_after_attempt, wait_fixed
 from app.core.config import settings
-from prometheus_client import Gauge, Counter, Summary
+from prometheus_client import Gauge, Summary
 
 
 http_requests_seconds_count = Gauge(
     "http_server_requests_seconds_count",
     "Total number of HTTP requests attempted",
-    ["method", "endpoint"]
+    ["method", "endpoint", "status"]
 )
 
 http_requests_errors_total = Gauge(
@@ -41,11 +41,9 @@ async def http_request_with_retry(method: str, url: str, json: dict = None, para
                     raise ValueError(f"Unsupported HTTP method: {method}")
 
                 http_requests_seconds_count.labels(
-                    **{
-                        "method": method.lower(),
-                        "endpoint": url,
-                        "status": str(response.status_code)
-                    }
+                    method=method.lower(),
+                    endpoint=url,
+                    status=str(response.status_code)
                 ).inc()
 
                 response.raise_for_status()
@@ -53,14 +51,10 @@ async def http_request_with_retry(method: str, url: str, json: dict = None, para
                 return response
         except Exception as e:
             http_requests_seconds_count.labels(
-                **{
-                    "method": method.lower(),
-                    "endpoint": url,
-                    "status": "500"
-                }
+                method=method.lower(),
+                endpoint=url,
+                status="500"
             ).inc()
-
-            response.raise_for_status()
 
             http_requests_errors_total.labels(
                 method=method.lower(),
