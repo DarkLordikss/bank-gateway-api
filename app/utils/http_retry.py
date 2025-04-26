@@ -4,21 +4,20 @@ from app.core.config import settings
 from prometheus_client import Gauge, Counter, Summary
 
 
-# ⚠️ Используем Gauge вместо Counter, чтобы избежать _total/_created
 http_requests_seconds_count = Gauge(
-    "http_requests_seconds_count",
+    "http_server_requests_seconds_count",
     "Total number of HTTP requests attempted",
     ["method", "endpoint"]
 )
 
 http_requests_errors_total = Gauge(
-    "http_requests_errors_total",
+    "http_request_errors_total",
     "Total number of failed HTTP requests",
     ["method", "endpoint", "error_type"]
 )
 
 http_requests_active_seconds = Summary(
-    "http_requests_active_seconds",
+    "http_request_duration_seconds",
     "Time spent on HTTP requests",
     ["method", "endpoint"]
 )
@@ -31,9 +30,6 @@ http_requests_active_seconds = Summary(
 async def http_request_with_retry(method: str, url: str, json: dict = None, params: dict = None) -> httpx.Response:
     labels = {"method": method.lower(), "endpoint": url}
 
-    # Теперь Gauge, инкремент вручную
-    http_requests_seconds_count.labels(**labels).inc()
-
     with http_requests_active_seconds.labels(**labels).time():
         try:
             async with httpx.AsyncClient() as client:
@@ -43,7 +39,17 @@ async def http_request_with_retry(method: str, url: str, json: dict = None, para
                     response = await client.post(url, json=json, params=params)
                 else:
                     raise ValueError(f"Unsupported HTTP method: {method}")
+
+                http_requests_seconds_count.labels(
+                    {
+                        "method": method.lower(),
+                        "endpoint": url,
+                        "status": response.status_code
+                    }
+                ).inc()
+
                 response.raise_for_status()
+
                 return response
         except Exception as e:
             http_requests_errors_total.labels(
